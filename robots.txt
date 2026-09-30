@@ -1,0 +1,63 @@
+# IGA Lines — every page is open to search engines and AI assistants.
+User-agent: *
+Allow: /
+Disallow: /_source/
+
+# AI search and assistant crawlers are welcome.
+User-agent: GPTBot
+Allow: /
+Disallow: /_source/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /_source/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /_source/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /_source/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /_source/
+
+User-agent: Claude-User
+Allow: /
+Disallow: /_source/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /_source/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /_source/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /_source/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /_source/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /_source/
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /_source/
+
+User-agent: meta-externalagent
+Allow: /
+Disallow: /_source/
+
+User-agent: CCBot
+Allow: /
+Disallow: /_source/
+
+Sitemap: https://robo-line.com/sitemap.xml

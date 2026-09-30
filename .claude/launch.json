@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "robo-line-html",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-p", "5500", "."],
-      "port": 5500
+      "name": "robo-line.com (IGA Lines)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5601"],
+      "port": 5601
     }
   ]
 }

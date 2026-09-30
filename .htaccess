@@ -1,9 +1,45 @@
+# IGA Lines — Apache/LiteSpeed settings (Hostinger reads this file).
 Options -Indexes
-RewriteEngine On
-RewriteBase /
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
 
-# Serve .html file for extensionless URL if the .html file exists
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteRule ^(.+)$ $1.html [L,QSA]
+RewriteEngine On
+
+# One address for every page: https://robo-line.com/ (Hostinger already sends http to https)
+RewriteCond %{HTTP_HOST} ^www\.robo\-line\.com$ [NC]
+RewriteRule ^ https://robo-line.com%{REQUEST_URI} [L,R=301]
+
+# The build folder and repository files are not part of the website
+RewriteRule (^|/)(_source|\.git|\.claude|\.kilo)(/|$) - [F,L]
+RewriteRule ^(README\.md|\.gitignore)$ - [F,L]
+
+# Addresses from the previous website
+RewriteRule ^products(\.html)?(/.*)?$ / [R=301,L]
+RewriteRule ^categories/(construction-equipment|agricultural-equipment)(\.html)?/?$ / [R=301,L]
+RewriteRule ^categories/(vending-machines|packaging-machines|recycling-lines)\.html$ /categories/$1/ [R=301,L]
+
+AddType image/avif .avif
+AddType font/woff2 .woff2
+AddType application/manifest+json .webmanifest
+AddDefaultCharset utf-8
+AddCharset utf-8 .txt .xml .webmanifest
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml application/javascript application/json application/ld+json application/manifest+json image/svg+xml
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "^site\.[0-9a-f]+\.js$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(avif|webp|jpg|png|svg|ico|woff2)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>

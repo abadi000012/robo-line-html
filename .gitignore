@@ -1,0 +1,6 @@
+.DS_Store
+.kilo/
+__pycache__/
+_source/.venv/
+_source/.cache/
+_source/tools/fonts-src/
