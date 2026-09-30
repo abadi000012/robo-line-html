@@ -53,9 +53,9 @@ The logo (`_source/src/svg/logo.svg`) is redrawn from the neon IGA Lines logo by
 
 GA4 account `410318390`, property `556934542`, stream `15892752173`, measurement ID `G-57TZ7CL20R` (separate IGA Lines / Robo Line property). Search Console domain `robo-line.com` is DNS verified and the sitemap successfully submitted (6 URLs).
 
-`_source/src/js/attribution.js` loads GA4, tracks WhatsApp/phone clicks, and appends the source and optional campaign to WhatsApp messages, including the quote builder. Enhanced measurement is off: message text/form values are not collected. Query parameters are allowlisted before GA receives the page URL.
+`_source/src/js/attribution.js` loads GA4, tracks WhatsApp/phone clicks, and appends a compact source code to WhatsApp messages, including the quote builder. Enhanced measurement is off: message text/form values are not collected. Query parameters are allowlisted before GA receives the page URL.
 
-UTMs take precedence, followed by ad click IDs, external referrers, then the last known source retained for 30 days in first-party storage. Direct visits retain the previous source; new external referrals replace it. Missing evidence is labelled direct/unknown. Codes: TT = TikTok, GA = Google Ads, HRJ = Haraj, GO = Google organic, DIR = direct/unknown. Attribution does not prove a message was sent; customers can edit the prefilled message.
+UTMs take precedence, followed by ad click IDs, external referrers, then the last known source retained for 30 days in first-party storage. Direct visits retain the previous source; new external referrals replace it. Missing evidence is labelled direct/unknown. Prefixes: TK = TikTok, ADW = Google Ads, HRJ = Haraj, GO = Google organic, DIR = direct/unknown. A random three-digit suffix is stored per visitor (for example TK010); it is a short reference, not a globally unique client number. Campaign names are not included in the message. Attribution does not prove a message was sent; customers can edit the prefilled message.
 
 Use these destination patterns in your ads/listings, with a distinct non-personal campaign name in place of `website`:
 
