@@ -330,8 +330,12 @@ def page(p, body):
     return head(p) + header(p["path"]) + body + footer() + dock(p.get("dock", "مرحبًا IGA Lines، أرغب بعرض سعر.")) + "</body>\n</html>\n"
 
 
+def lines(text):
+    return " <br>".join(e(part) for part in text.split("\n"))
+
+
 def rail_title(main, tail):
-    tail_html = f' <span class="rail-title__tail">{e(tail)}</span>' if tail else ""
+    tail_html = f' <span class="rail-title__tail">{lines(tail)}</span>' if tail else ""
     short = " rail-title--short" if tail and len(tail) <= 24 else ""
     return (f'<h1 class="rail-title{short}"><span class="rail-title__main">{e(main)}'
             f'<span class="rail-node" aria-hidden="true"></span></span>{tail_html}</h1>')
@@ -874,7 +878,7 @@ AddCharset utf-8 .txt .xml .webmanifest
 # ---------------------------------------------------------------- social share images
 
 def og_cards():
-    cards = [("home", home_content.HOME["h1_main"], "للبيع الذاتي والتعبئة وإعادة التدوير ومغاسل السيارات",
+    cards = [("home", home_content.HOME["h1_main"], home_content.HOME["h1_tail"],
               ["iga-flower-vending", "iga-pack-pouch", "iga-recycle-sort", "iga-wash-tunnel"])]
     for c in ORDERED:
         cards.append((c["slug"], c["h1_main"], c["h1_tail"], [p["image"] for p in c["products"][:3]]))
@@ -915,7 +919,7 @@ h1{{position:absolute;right:64px;top:168px;width:640px;margin:0;font-size:{64 if
 .t img{{width:100%;height:100%;object-fit:cover;object-position:50% 30%}}
 .tiles.three .t:first-child{{grid-row:span 2}}
 </style></head><body><div class="glow"></div><div class="logo">{logo("o")}</div>
-<h1><span class="m">{e(main)}<span class="n"></span></span><span class="tail">{e(tail)}</span></h1>
+<h1><span class="m">{e(main)}<span class="n"></span></span><span class="tail">{lines(tail)}</span></h1>
 <div class="site">{HOST}</div>
 <div class="tiles{' three' if len(imgs) == 3 else ''}">{tiles}</div></body></html>"""
             src = Path(tmp) / f"{slug}.html"
