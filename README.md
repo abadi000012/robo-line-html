@@ -51,7 +51,7 @@ The logo (`_source/src/svg/logo.svg`) is redrawn from the neon IGA Lines logo by
 
 ## Analytics and WhatsApp sources (2026-10-01)
 
-GA4 account `410318390`, stream `15892752173`, measurement ID `G-57TZ7CL20R` (separate IGA Lines / Robo Line property). Search Console domain `robo-line.com` is DNS verified and the sitemap successfully submitted (6 URLs).
+GA4 account `410318390`, property `556934542`, stream `15892752173`, measurement ID `G-57TZ7CL20R` (separate IGA Lines / Robo Line property). Search Console domain `robo-line.com` is DNS verified and the sitemap successfully submitted (6 URLs).
 
 `_source/src/js/attribution.js` loads GA4, tracks WhatsApp/phone clicks, and appends the source and optional campaign to WhatsApp messages, including the quote builder. Enhanced measurement is off: message text/form values are not collected. Query parameters are allowlisted before GA receives the page URL.
 
