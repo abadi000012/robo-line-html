@@ -164,6 +164,8 @@ def minify_css(css):
 CSS = minify_css((SRC / "css" / "site.css").read_text(encoding="utf-8"))
 JS_SRC = (SRC / "js" / "site.js").read_text(encoding="utf-8")
 JS_NAME = f"site.{hashlib.sha1(JS_SRC.encode()).hexdigest()[:10]}.js"
+ATTRIBUTION_SRC = (SRC / "js" / "attribution.js").read_text(encoding="utf-8")
+ATTRIBUTION_NAME = f"attribution.{hashlib.sha1(ATTRIBUTION_SRC.encode()).hexdigest()[:10]}.js"
 
 
 # ---------------------------------------------------------------- structured data
@@ -253,6 +255,7 @@ def head(p):
 <link rel="preload" href="/assets/fonts/ibm-plex-sans-arabic-400.woff2" as="font" type="font/woff2" crossorigin>
 <script>document.documentElement.classList.add("js")</script>
 <style>{CSS}</style>
+<script src="/assets/{ATTRIBUTION_NAME}" data-ga-id="G-57TZ7CL20R" defer></script>
 <script src="/assets/{JS_NAME}" defer></script>
 {p.get('jsonld', '')}
 </head>
@@ -766,6 +769,7 @@ def build_static():
     for old in (PUB / "assets").glob("site.*.js"):
         old.unlink()
     (PUB / "assets" / JS_NAME).write_text(JS_SRC, encoding="utf-8")
+    (PUB / "assets" / ATTRIBUTION_NAME).write_text(ATTRIBUTION_SRC, encoding="utf-8")
     shutil.copy2(SRC / "svg" / "favicon.svg", PUB / "favicon.svg")
     for f in ("favicon.ico", "apple-touch-icon.png", "icon-192.png", "icon-512.png"):
         shutil.copy2(SRC / "images" / f, PUB / f)

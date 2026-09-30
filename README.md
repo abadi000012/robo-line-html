@@ -48,3 +48,19 @@ The share images (`og/`) are rendered with Google Chrome.
   addresses to the new pages, adds caching and compression, and blocks `_source/` from the web.
 
 The logo (`_source/src/svg/logo.svg`) is redrawn from the neon IGA Lines logo by `_source/tools/make_logo.py`.
+
+## Analytics and WhatsApp sources (2026-10-01)
+
+GA4 account `410318390`, stream `15892752173`, measurement ID `G-57TZ7CL20R` (separate IGA Lines / Robo Line property). Search Console domain `robo-line.com` is DNS verified and the sitemap successfully submitted (6 URLs).
+
+`_source/src/js/attribution.js` loads GA4, tracks WhatsApp/phone clicks, and appends the source and optional campaign to WhatsApp messages, including the quote builder. Enhanced measurement is off: message text/form values are not collected. Query parameters are allowlisted before GA receives the page URL.
+
+UTMs take precedence, followed by ad click IDs, external referrers, then the last known source retained for 30 days in first-party storage. Direct visits retain the previous source; new external referrals replace it. Missing evidence is labelled direct/unknown. Codes: TT = TikTok, GA = Google Ads, HRJ = Haraj, GO = Google organic, DIR = direct/unknown. Attribution does not prove a message was sent; customers can edit the prefilled message.
+
+Use these destination patterns in your ads/listings, with a distinct non-personal campaign name in place of `website`:
+
+- TikTok: `https://robo-line.com/?utm_source=tiktok&utm_medium=paid_social&utm_campaign=website`
+- Google Ads: `https://robo-line.com/?utm_source=google&utm_medium=cpc&utm_campaign=website`
+- Haraj: `https://robo-line.com/?utm_source=haraj&utm_medium=referral&utm_campaign=website`
+
+The same parameters can be used on category page URLs. Do not tag internal navigation links. Ad accounts/listing URLs have not been changed by this website deployment.

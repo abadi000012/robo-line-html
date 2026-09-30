@@ -141,8 +141,12 @@
       var page = form.getAttribute("data-page");
       if (page) parts.push("الصفحة: " + page);
       var url = form.getAttribute("action") + "?text=" + encodeURIComponent(parts.join("\n"));
-      var win = window.open(url, "_blank", "noopener");
-      if (!win) window.location.href = url;
+      if (window.SiteAttribution) {
+        url = window.SiteAttribution.whatsappUrl(url);
+        window.SiteAttribution.track("whatsapp_click");
+      }
+      // Opening with noopener returns null even when successful; do not open twice.
+      window.open(url, "_blank", "noopener");
     });
   });
 
