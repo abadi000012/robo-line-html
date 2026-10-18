@@ -69,7 +69,7 @@ The same parameters can be used on category page URLs. Do not tag internal navig
 Policies and privacy choices (19 October 2026)
 --------------------------------------------
 - /policies.html contains Arabic privacy, returns/refunds, shipping, complaints, and service/agency terms. Footer links expose each section.
-- Identify the actual seller/agent and scope in every quote; these policies do not replace the order-specific contract or mandatory consumer rights.
+- The owner confirmed that goods invoices are issued by the establishment: the establishment is the seller for these sales. Agency terms apply only to separately agreed standalone services, not to the goods value. Policies do not replace order-specific details or mandatory consumer rights.
 - Published operational targets: complaint acknowledgement within 2 working days; outcome or reasoned update within 7 working days. Eligible refunds are initiated within 7 working days after lawful verification/return requirements, subject to shorter mandatory deadlines.
 - assets/privacy-consent.js gates optional analytics/advertising scripts until opt-in. Decline preserves contact and product functions. Choices are stored for 180 days; withdrawal stops tags via reload. Do not re-add ungated trackers or GTM noscript fallbacks. This changes advertising measurement for visitors who decline.
 - Hosted checkout services have separate privacy controls and policy settings; changing this repository does not change those dashboards.
