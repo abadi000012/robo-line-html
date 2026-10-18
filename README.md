@@ -64,3 +64,13 @@ Use these destination patterns in your ads/listings, with a distinct non-persona
 - Haraj: `https://robo-line.com/?utm_source=haraj&utm_medium=referral&utm_campaign=website`
 
 The same parameters can be used on category page URLs. Do not tag internal navigation links. Ad accounts/listing URLs have not been changed by this website deployment.
+
+
+Policies and privacy choices (19 October 2026)
+--------------------------------------------
+- /policies.html contains Arabic privacy, returns/refunds, shipping, complaints, and service/agency terms. Footer links expose each section.
+- Identify the actual seller/agent and scope in every quote; these policies do not replace the order-specific contract or mandatory consumer rights.
+- Published operational targets: complaint acknowledgement within 2 working days; outcome or reasoned update within 7 working days. Eligible refunds are initiated within 7 working days after lawful verification/return requirements, subject to shorter mandatory deadlines.
+- assets/privacy-consent.js gates optional analytics/advertising scripts until opt-in. Decline preserves contact and product functions. Choices are stored for 180 days; withdrawal stops tags via reload. Do not re-add ungated trackers or GTM noscript fallbacks. This changes advertising measurement for visitors who decline.
+- Hosted checkout services have separate privacy controls and policy settings; changing this repository does not change those dashboards.
+- Edit _source/src/policies.html and _source/src/js/privacy-consent.js; the builder copies both into the public site.

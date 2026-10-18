@@ -256,7 +256,8 @@ def head(p):
 <link rel="preload" href="/assets/fonts/ibm-plex-sans-arabic-400.woff2" as="font" type="font/woff2" crossorigin>
 <script>document.documentElement.classList.add("js")</script>
 <style>{CSS}</style>
-<script src="/assets/{ATTRIBUTION_NAME}" data-ga-id="G-57TZ7CL20R" defer></script>
+<script type="text/plain" data-optional-tracking data-src="/assets/{ATTRIBUTION_NAME}" data-ga-id="G-57TZ7CL20R" defer></script>
+<script src="/assets/privacy-consent.js?v=20261019"></script>
 <script src="/assets/{JS_NAME}" defer></script>
 {p.get('jsonld', '')}
 </head>
@@ -293,6 +294,8 @@ def footer():
     cats = "".join(f'<li><a href="{cat_path(c)}">{e(c["name"])}</a></li>' for c in ORDERED)
     return f"""<footer class="site-footer">
 <div class="wrap">
+<nav aria-label="السياسات وحقوق العميل" style="display:flex;flex-wrap:wrap;gap:12px 20px;padding:20px 0;font-size:14px;line-height:1.8"><a href="/policies.html#privacy">الخصوصية</a><a href="/policies.html#returns">الاستبدال والاسترجاع واسترداد الأموال</a><a href="/policies.html#shipping">الشحن والتوصيل</a><a href="/policies.html#complaints">الشكاوى</a><a href="/policies.html#terms">شروط الخدمة والوساطة</a><button type="button" data-privacy-settings style="font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-radius:6px;padding:4px 10px;cursor:pointer">إعدادات الخصوصية</button></nav>
+<p>مؤسسة نمو الذكاء الآلي للتجارة والاستيراد · السجل التجاري / الرقم الموحد <bdi>7054456012</bdi> · جدة، السعودية</p>
 <div class="footer-grid">
 <div>
 <a class="brand" href="/" aria-label="IGA Lines، الصفحة الرئيسية">{logo("f")}</a>
@@ -782,7 +785,7 @@ def build_static():
                   {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"}],
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    pages = [("/", "1.0")] + [(cat_path(c), "0.9") for c in ORDERED] + [("/contact/", "0.6")]
+    pages = [("/", "1.0")] + [(cat_path(c), "0.9") for c in ORDERED] + [("/contact/", "0.6"), ("/policies.html", "0.4")]
     items = []
     for path, prio in pages:
         imgs = ""
@@ -952,6 +955,8 @@ def main():
     for d in ("categories", "contact"):
         shutil.rmtree(PUB / d, ignore_errors=True)
     build_static()
+    shutil.copy2(SRC / "policies.html", PUB / "policies.html")
+    shutil.copy2(SRC / "js" / "privacy-consent.js", PUB / "assets" / "privacy-consent.js")
     build_home()
     for c in ORDERED:
         build_category(c)
@@ -969,7 +974,7 @@ def main():
 
 
 SITE_DIRS = ("assets", "img", "og", "categories", "contact")
-SITE_ROOT_FILES = ("index.html", "404.html", "robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
+SITE_ROOT_FILES = ("policies.html", "index.html", "404.html", "robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
                    ".htaccess", "favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-192.png", "icon-512.png")
 
 
