@@ -235,6 +235,7 @@ def head(p):
 <link rel="canonical" href="{canonical}">
 <meta name="robots" content="{robots}">
 <meta name="theme-color" content="#050a14">
+<meta name="domain-verification" content="af434bebed4697dc6e93001e5d1da07c0400ab8f680ac2935ee31965743afd5c">
 <meta name="format-detection" content="telephone=no">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ar_SA">
