@@ -17,7 +17,11 @@ RewriteRule (^|/)(_source|\.git|\.claude|\.kilo)(/|$) - [F,L]
 RewriteRule ^(README\.md|\.gitignore)$ - [F,L]
 
 # Addresses from the previous website
-RewriteRule ^products(\.html)?(/.*)?$ / [R=301,L]
+RewriteRule ^products(\.html)?/?$ /categories/vending-machines/ [R=301,L]
+# Retired product addresses redirect only when no current product directory exists.
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^products/ /categories/vending-machines/ [R=301,L]
 RewriteRule ^categories/(construction-equipment|agricultural-equipment)(\.html)?/?$ / [R=301,L]
 RewriteRule ^categories/(vending-machines|packaging-machines|recycling-lines)\.html$ /categories/$1/ [R=301,L]
 

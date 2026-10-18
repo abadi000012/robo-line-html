@@ -13,8 +13,8 @@ PHONE_DISPLAY = "+966 55 989 7783"
 WHATSAPP = "966559897783"
 EMAIL = "info@robo-line.com"
 
-UPDATED_ISO = "2026-09-30"
-UPDATED_AR = "30 سبتمبر 2026"
+UPDATED_ISO = "2026-10-19"
+UPDATED_AR = "19 أكتوبر 2026"
 YEAR = 2026
 
 # Caption shown under every illustrative machine image.

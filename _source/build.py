@@ -27,7 +27,11 @@ sys.path.insert(0, str(SRC))
 
 from content import site  # noqa: E402
 from content import home as home_content  # noqa: E402
-from content import vending, packaging, recycling, car_wash  # noqa: E402
+from content import vending, packaging, recycling, car_wash, catalog  # noqa: E402
+
+for group in vending.CATEGORY["products"]:
+    group["models"] = [m for m in catalog.MODELS if m["category"] == group["id"]]
+    group["image"] = group["models"][0]["images"][0]
 
 CATS = {m.CATEGORY["slug"]: m.CATEGORY for m in (vending, packaging, recycling, car_wash)}
 ORDERED = [CATS[s] for s in site.CATEGORY_ORDER]
@@ -63,12 +67,24 @@ def cat_path(c):
     return f"/categories/{c['slug']}/"
 
 
+def product_path(model):
+    return f"/products/{model['slug']}/"
+
+
 def wa(text):
     return f"https://wa.me/{site.WHATSAPP}?text={quote(text)}"
 
 
 def ltr(s):
     return f'<bdi dir="ltr" class="num">{e(s)}</bdi>'
+
+
+def spec_value(s):
+    # Keep dimension sequences in source order inside an Arabic specification row.
+    match = re.match(r'^([0-9][0-9 .×–°-]*)(.*)$', s)
+    if match:
+        return f'<bdi dir="ltr">{e(match[1].strip())}</bdi> {e(match[2])}'
+    return f'<bdi>{e(s)}</bdi>'
 
 
 ICONS = {
@@ -464,6 +480,71 @@ def table(head_cells, rows):
 
 # ---------------------------------------------------------------- pages
 
+def model_card(model):
+    highlights = "".join(f"<li>{e(s)}</li>" for s in model["highlights"])
+    return f'''<article class="model-card">
+<a class="model-card-image" href="{product_path(model)}" aria-label="{e(model['name'])} — {model['code']}">
+{picture(model['images'][0], 'portrait', model['name'] + ' بهوية IGA', '(min-width: 1000px) 360px, (min-width: 640px) 45vw, 90vw')}
+</a><div class="model-card-copy"><p class="model-code">{ltr(model['code'])}</p>
+<h3><a href="{product_path(model)}">{e(model['name'])}</a></h3>
+<ul class="model-highlights">{highlights}</ul>
+<a class="model-link" href="{product_path(model)}">الصور والمواصفات {ICONS['go']}</a>
+</div></article>'''
+
+
+def build_product(model):
+    group = next(g for g in vending.CATEGORY['products'] if g['id'] == model['category'])
+    path = product_path(model)
+    page_url = url(path)
+    back = cat_path(vending.CATEGORY) + '#' + group['id']
+    ask_text = f"مرحبًا IGA Lines، أرغب بعرض سعر ومواصفات {model['name']}، رمز المنتج {model['code']}."
+    labels = ['خلفية بيضاء', 'في الموقع — 1', 'في الموقع — 2']
+    gallery = ''
+    for i, (stem, label) in enumerate(zip(model['images'], labels)):
+        gallery += f'''<figure class="product-slide" id="photo-{i}" data-photo="{i}">
+{picture(stem, 'portrait' if i == 0 else 'photo', model['name'] + ' — ' + label, '(min-width: 1000px) 600px, 92vw', eager='high' if i == 0 else False)}
+</figure>'''
+    thumbs = ''.join(f'''<a class="product-thumb" href="#photo-{i}" data-photo-select="{i}" aria-label="عرض الصورة: {e(label)}">
+{picture(stem, 'portrait' if i == 0 else 'photo', '', '96px')}<span>{e(label)}</span></a>'''
+                     for i, (stem, label) in enumerate(zip(model['images'], labels)))
+    specs = ''.join(f'<div><dt>{e(k)}</dt><dd>{spec_value(v)}</dd></div>' for k, v in model['specs'])
+    uses = ' · '.join(e(x) for x in model['uses'])
+    related = ''.join(model_card(m) for m in group['models'] if m is not model)
+    body = f'''<main id="main" class="product-page">
+<div class="product-top"><div class="wrap">
+<nav class="crumbs" aria-label="مسار التصفح"><ol><li><a href="/">الرئيسية</a></li><li><a href="/categories/vending-machines/">مكائن البيع الذاتي</a></li><li><a href="{back}">{e(group['short'])}</a></li><li aria-current="page">{ltr(model['code'])}</li></ol></nav>
+<div class="product-layout">
+<div class="product-gallery" data-gallery><div class="product-photos">{gallery}</div>
+<nav class="product-thumbs" aria-label="صور المنتج">{thumbs}</nav>
+<p class="product-caption">{e(catalog.IMAGE_NOTE)}</p></div>
+<div class="product-summary"><p class="eyebrow">{e(group['short'])} <span aria-hidden="true">/</span> {ltr(model['code'])}</p>
+<h1>{e(model['name'])}</h1><p class="product-label">{e(model['label'])}</p>
+<p>{e(model['intro'])}</p>
+<dl class="product-quick">{''.join(f'<div><dt>{e(k)}</dt><dd>{spec_value(v)}</dd></div>' for k,v in model['specs'][:3])}</dl>
+<div class="btn-row"><a class="btn btn-primary" href="{wa(ask_text)}" target="_blank" rel="noopener">{ICONS['wa']}اطلب عرضًا لهذا الموديل</a><a class="btn btn-light" href="#specifications">المواصفات الكاملة</a></div>
+<p class="note-sm">السعر والتجهيز حسب عرض المشروع. أرسل المدينة والموقع والكمية المطلوبة.</p>
+<a class="product-back" href="{back}">قارن موديلات {e(group['short'])} {ICONS['go']}</a>
+</div></div></div></div>
+<section class="band band-steel" id="specifications" aria-labelledby="spec-title"><div class="wrap product-details">
+<div>{section_head('المواصفات الفنية', 'spec-title')}<dl class="product-specs"><div><dt>رمز المنتج لدى IGA</dt><dd>{ltr(model['code'])}</dd></div>{specs}</dl><p class="note-sm">{e(catalog.SPEC_NOTE)}</p></div>
+<aside class="product-planning"><h2>هل يناسب موقعك؟</h2><p class="eyebrow">مواقع مقترحة للدراسة</p><p>{uses}</p><h3>قبل تجهيز الموقع</h3><p>{e(model['check'])}</p><h3>ما الذي نراجعه معك؟</h3><ul><li>المساحة والتهوية ومسار التعبئة والصيانة.</li><li>الكهرباء وتكامل وسيلة الدفع المحلية.</li><li>الكمية والشحن والتركيب وخطة قطع الغيار.</li></ul><a class="btn btn-primary" href="{wa(ask_text)}" target="_blank" rel="noopener">ناقش تجهيز مشروعك {ICONS['go']}</a></aside>
+</div></section>
+<section class="band band-light" aria-labelledby="related-models"><div class="wrap">{section_head('موديلات أخرى من الفئة نفسها', 'related-models')}<div class="model-grid">{related}</div><a class="product-back" href="/categories/vending-machines/">تصفح الفئات الخمس {ICONS['go']}</a></div></section>
+</main>'''
+    nodes = [
+        {'@type': 'Product', '@id': page_url + '#product', 'url': page_url,
+         'name': model['name'] + ' ' + model['code'], 'sku': model['code'],
+         'description': model['intro'], 'brand': {'@type': 'Brand', 'name': 'IGA Lines'},
+         'image': [img_url(s, 'portrait' if i == 0 else 'photo') for i,s in enumerate(model['images'])],
+         'additionalProperty': [{'@type': 'PropertyValue', 'name': k, 'value': v} for k,v in model['specs']]},
+        {'@type': 'WebPage', '@id': page_url + '#webpage', 'url': page_url,
+         'name': model['name'], 'inLanguage': 'ar-SA', 'isPartOf': {'@id': SITE_ID},
+         'mainEntity': {'@id': page_url + '#product'}, 'breadcrumb': {'@id': page_url + '#breadcrumb'}},
+        breadcrumb_node(page_url, [('الرئيسية', url('/')), ('مكائن البيع الذاتي', url(cat_path(vending.CATEGORY))), (model['name'], page_url)])]
+    p = dict(path=path, title=f"{model['name']} {model['code']} | المواصفات والصور | IGA Lines",
+             description=model['intro'], og=model['slug'], jsonld=jsonld(nodes), dock=ask_text)
+    write(path, page(p, body))
+
 def build_category(c):
     path = cat_path(c)
     page_url = url(path)
@@ -493,6 +574,13 @@ def build_category(c):
                    else "(min-width: 1200px) 540px, (min-width: 900px) 44vw, 100vw")
     articles = ""
     for p in products:
+        if p.get('models'):
+            cards = ''.join(model_card(m) for m in p['models'])
+            articles += f'''<article class="catalog-group" id="{p['id']}" aria-labelledby="{p['id']}-t">
+<div class="catalog-group-head"><div><p class="eyebrow">{e(p['tag'])}</p><h2 id="{p['id']}-t">{e(p['name'])}</h2></div><span class="model-count">{len(p['models'])} موديلات</span></div>
+<p class="catalog-intro">{md(p['body'])}</p><div class="model-grid">{cards}</div>
+<p class="catalog-check"><strong>قبل الاختيار:</strong> {md(p['check'])}</p></article>'''
+            continue
         feats = "".join(f"<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>" for k, v in p["features"])
         value = f'<p class="value"><strong>القيمة العملية:</strong> {md(p["value"])}</p>' if p.get("value") else ""
         ask = wa(f"مرحبًا IGA Lines، أرغب بمعلومات وعرض سعر عن: {p['name']}.")
@@ -621,6 +709,12 @@ def build_category(c):
         breadcrumb_node(page_url, [("الرئيسية", url("/")), (c["name"], page_url)]),
         faq_node(page_url, f["items"]),
     ]
+    if c is vending.CATEGORY:
+        nodes[2]['numberOfItems'] = len(catalog.MODELS)
+        nodes[2]['itemListElement'] = [
+            {'@type': 'ListItem', 'position': i + 1, 'name': m['name'] + ' ' + m['code'],
+             'url': url(product_path(m)), 'image': img_url(m['images'][0], 'portrait')}
+            for i, m in enumerate(catalog.MODELS)]
     p = dict(path=path, title=c["title"], description=c["description"], og=c["slug"],
              og_alt=c["h1_main"] + " " + c["h1_tail"], jsonld=jsonld(nodes),
              dock=f"مرحبًا IGA Lines، أرغب بعرض سعر لـ{c['name']}.")
@@ -785,7 +879,7 @@ def build_static():
                   {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"}],
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    pages = [("/", "1.0")] + [(cat_path(c), "0.9") for c in ORDERED] + [("/contact/", "0.6"), ("/policies.html", "0.4")]
+    pages = [("/", "1.0")] + [(cat_path(c), "0.9") for c in ORDERED] + [(product_path(m), "0.8") for m in catalog.MODELS] + [("/contact/", "0.6"), ("/policies.html", "0.4")]
     items = []
     for path, prio in pages:
         imgs = ""
@@ -795,6 +889,9 @@ def build_static():
             imgs = "".join(
                 f"<image:image><image:loc>{img_url(p['image'], kind)}</image:loc></image:image>"
                 for p in c["products"])
+        model = next((m for m in catalog.MODELS if product_path(m) == path), None)
+        if model:
+            imgs = ''.join(f"<image:image><image:loc>{img_url(s, 'portrait' if i == 0 else 'photo')}</image:loc></image:image>" for i,s in enumerate(model['images']))
         items.append(f"<url><loc>{url(path)}</loc><lastmod>{site.UPDATED_ISO}</lastmod>"
                      f"<priority>{prio}</priority>{imgs}</url>")
     (PUB / "sitemap.xml").write_text(
@@ -827,6 +924,8 @@ def build_static():
     for c in ORDERED:
         sols = "، ".join(p["name"] for p in c["products"])
         llms.append(f"- [{c['h1_main']} {c['h1_tail']}]({url(cat_path(c))}): {plain(c['description'])} الحلول: {sols}.")
+    llms += ['', '## Vending models', '']
+    llms += [f"- [{m['code']} — {m['name']}]({url(product_path(m))}): {m['label']}." for m in catalog.MODELS]
     llms += ["", "## Contact", "", f"- [تواصل مع IGA Lines]({url('/contact/')}): WhatsApp, phone and email.", ""]
     (PUB / "llms.txt").write_text("\n".join(llms), encoding="utf-8")
 
@@ -854,7 +953,11 @@ RewriteRule (^|/)(_source|\.git|\.claude|\.kilo)(/|$) - [F,L]
 RewriteRule ^(README\.md|\.gitignore)$ - [F,L]
 
 # Addresses from the previous website
-RewriteRule ^products(\.html)?(/.*)?$ / [R=301,L]
+RewriteRule ^products(\.html)?/?$ /categories/vending-machines/ [R=301,L]
+# Retired product addresses redirect only when no current product directory exists.
+RewriteCond %{{REQUEST_FILENAME}} !-d
+RewriteCond %{{REQUEST_FILENAME}} !-f
+RewriteRule ^products/ /categories/vending-machines/ [R=301,L]
 RewriteRule ^categories/(construction-equipment|agricultural-equipment)(\.html)?/?$ / [R=301,L]
 RewriteRule ^categories/(vending-machines|packaging-machines|recycling-lines)\.html$ /categories/$1/ [R=301,L]
 
@@ -890,9 +993,11 @@ AddCharset utf-8 .txt .xml .webmanifest
 
 def og_cards():
     cards = [("home", home_content.HOME["h1_main"], home_content.HOME["h1_tail"],
-              ["iga-flower-vending", "iga-pack-pouch", "iga-recycle-sort", "iga-wash-tunnel"])]
+              [vending.CATEGORY['products'][0]['image'], "iga-pack-pouch", "iga-recycle-sort", "iga-wash-tunnel"])]
     for c in ORDERED:
         cards.append((c["slug"], c["h1_main"], c["h1_tail"], [p["image"] for p in c["products"][:3]]))
+    for m in catalog.MODELS:
+        cards.append((m['slug'], m['name'], m['code'], m['images']))
     return cards
 
 
@@ -929,10 +1034,12 @@ h1{{position:absolute;right:64px;top:168px;width:640px;margin:0;font-size:{64 if
 .t{{border-radius:18px;overflow:hidden;background:#dde4ed}}
 .t img{{width:100%;height:100%;object-fit:cover;object-position:50% 30%}}
 .tiles.three .t:first-child{{grid-row:span 2}}
+.tiles.product .t:first-child{{background:#fff}}
+.tiles.product .t:first-child img{{object-fit:contain}}
 </style></head><body><div class="glow"></div><div class="logo">{logo("o")}</div>
 <h1><span class="m">{e(main)}<span class="n"></span></span><span class="tail">{lines(tail)}</span></h1>
 <div class="site">{HOST}</div>
-<div class="tiles{' three' if len(imgs) == 3 else ''}">{tiles}</div></body></html>"""
+<div class="tiles{' three' if len(imgs) == 3 else ''}{' product' if slug.startswith('iga-') else ''}">{tiles}</div></body></html>"""
             src = Path(tmp) / f"{slug}.html"
             src.write_text(doc, encoding="utf-8")
             png = Path(tmp) / f"{slug}.png"
@@ -952,7 +1059,7 @@ def main():
     PUB.mkdir(exist_ok=True)
     for stale in ("index.html", "404.html"):
         (PUB / stale).unlink(missing_ok=True)
-    for d in ("categories", "contact"):
+    for d in ("categories", "contact", "products"):
         shutil.rmtree(PUB / d, ignore_errors=True)
     build_static()
     shutil.copy2(SRC / "policies.html", PUB / "policies.html")
@@ -960,6 +1067,8 @@ def main():
     build_home()
     for c in ORDERED:
         build_category(c)
+    for model in catalog.MODELS:
+        build_product(model)
     build_contact()
     build_404()
     build_og()
@@ -973,7 +1082,7 @@ def main():
     print(f"built {pages} pages · website files {total / 1e6:.1f} MB · css {len(CSS) / 1024:.1f} KB inline · {site.DOMAIN}")
 
 
-SITE_DIRS = ("assets", "img", "og", "categories", "contact")
+SITE_DIRS = ("assets", "img", "og", "categories", "contact", "products")
 SITE_ROOT_FILES = ("policies.html", "index.html", "404.html", "robots.txt", "sitemap.xml", "llms.txt", "site.webmanifest",
                    ".htaccess", "favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-192.png", "icon-512.png")
 

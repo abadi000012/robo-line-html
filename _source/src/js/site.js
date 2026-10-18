@@ -2,6 +2,28 @@
 (function () {
   "use strict";
   var d = document;
+  /* Gallery links still reach every photo when JavaScript is unavailable. */
+  d.querySelectorAll('[data-gallery]').forEach(function (gallery) {
+    var photos = Array.from(gallery.querySelectorAll('[data-photo]'));
+    var selectors = Array.from(gallery.querySelectorAll('[data-photo-select]'));
+    function select(index) {
+      photos.forEach(function (photo, i) { photo.hidden = i !== index; });
+      selectors.forEach(function (link, i) { link.setAttribute('aria-current', String(i === index)); });
+    }
+    selectors.forEach(function (link, index) {
+      link.addEventListener('click', function (event) { event.preventDefault(); select(index); });
+      link.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          var next = (index + (event.key === 'ArrowLeft' ? 1 : -1) + selectors.length) % selectors.length;
+          selectors[next].focus(); select(next);
+        }
+      });
+    });
+    gallery.classList.add('is-enhanced');
+    var initial = /^#photo-([0-2])$/.exec(window.location.hash);
+    select(initial ? Number(initial[1]) : 0);
+  });
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var nf = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
   var nf0 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });

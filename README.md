@@ -13,8 +13,11 @@ the website**. Every file at the top level except `_source/` is built output.
 | Automatic car wash | `/categories/car-wash/` |
 | Contact | `/contact/` |
 
-There are no product pages. Each example product is a section on its category page with its own
-anchor (e.g. `/categories/vending-machines/#flower-vending`) and WhatsApp/call buttons.
+The five vending sections retain their category anchors (e.g. `/categories/vending-machines/#flower-vending`).
+Each links to individual model pages at `/products/iga-ic01/` etc.: three ice-cream models and two
+each for flowers, cotton candy, protein shakes and orange juice (11 pages, 33 IGA illustrations).
+Catalog codes belong to IGA; factory references appear only where supported. Supplier evidence
+and editorial notes live in the non-public `_source/src/content/catalog.py`.
 
 ## Change something
 
@@ -25,6 +28,7 @@ Edit the source in `_source/`, rebuild, commit, push.
 | Phone, WhatsApp, email, domain | `_source/src/content/site.py` |
 | Home and contact page text | `_source/src/content/home.py` |
 | Category text, FAQs, tables, calculators | `_source/src/content/vending.py`, `packaging.py`, `recycling.py`, `car_wash.py` |
+| Vending models, specifications and image stems | `_source/src/content/catalog.py` |
 | Colors and layout | `_source/src/css/site.css` |
 | Calculators, WhatsApp message builder | `_source/src/js/site.js` |
 | Images (source files) | `_source/src/images/` — replace a file with a real photo of the same name |
@@ -41,7 +45,8 @@ The share images (`og/`) are rendered with Google Chrome.
 
 - Pages with inlined CSS, AVIF/WebP images in several sizes, and self-hosted fonts.
 - JSON-LD on every page: Organization, WebSite, and per page CollectionPage/Service/ItemList/
-  BreadcrumbList/FAQPage. There is no Product/price/rating markup, because no prices are published.
+  BreadcrumbList/FAQPage; model pages add Product with SKU and technical properties.
+  No price, availability, review or rating claims are generated.
 - `sitemap.xml`, `robots.txt` (open to search engines and AI assistants), `llms.txt`,
   `site.webmanifest`, favicons, and 1200×630 share images for WhatsApp and social links.
 - `.htaccess`, which Hostinger reads. It redirects www to the bare domain and the previous site's
