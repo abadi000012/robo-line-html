@@ -838,6 +838,9 @@ ErrorDocument 404 /404.html
 
 RewriteEngine On
 
+# Serve the Saudi Business Center verification file on either hostname.
+RewriteRule ^af434bebed4697dc6e93001e5d1da07c0400ab8f680ac2935ee31965743afd5c\.txt$ - [L]
+
 # One address for every page: https://{HOST}/ (Hostinger already sends http to https)
 RewriteCond %{{HTTP_HOST}} ^www\.{host}$ [NC]
 RewriteRule ^ https://{HOST}%{{REQUEST_URI}} [L,R=301]
