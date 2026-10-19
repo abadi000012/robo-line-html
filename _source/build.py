@@ -27,11 +27,18 @@ sys.path.insert(0, str(SRC))
 
 from content import site  # noqa: E402
 from content import home as home_content  # noqa: E402
-from content import vending, packaging, recycling, car_wash, catalog  # noqa: E402
+from content import vending, packaging, recycling, car_wash, catalog, car_wash_catalog  # noqa: E402
 
-for group in vending.CATEGORY["products"]:
-    group["models"] = [m for m in catalog.MODELS if m["category"] == group["id"]]
-    group["image"] = group["models"][0]["images"][0]
+MODEL_SECTIONS = [(vending.CATEGORY, catalog.MODELS), (car_wash.CATEGORY, car_wash_catalog.MODELS)]
+ALL_MODELS = [m for _, models in MODEL_SECTIONS for m in models]
+for owner, models in MODEL_SECTIONS:
+    for model in models:
+        model["section"] = owner["slug"]
+    for group in owner["products"]:
+        selected = [m for m in models if m["category"] == group["id"]]
+        if selected:
+            group["models"] = selected
+            group["image"] = selected[0]["images"][0]
 
 CATS = {m.CATEGORY["slug"]: m.CATEGORY for m in (vending, packaging, recycling, car_wash)}
 ORDERED = [CATS[s] for s in site.CATEGORY_ORDER]
@@ -80,11 +87,10 @@ def ltr(s):
 
 
 def spec_value(s):
-    # Keep dimension sequences in source order inside an Arabic specification row.
-    match = re.match(r'^([0-9][0-9 .×–°-]*)(.*)$', s)
-    if match:
-        return f'<bdi dir="ltr">{e(match[1].strip())}</bdi> {e(match[2])}'
-    return f'<bdi>{e(s)}</bdi>'
+    # Isolate Latin model codes and numeric ranges wherever they occur in RTL rows.
+    tokens = re.split(r'([A-Za-z][A-Za-z0-9 ./×–°-]*[A-Za-z0-9]|[0-9]+(?:[.][0-9]+)?(?:\s*[×/–-]\s*[0-9]+(?:[.][0-9]+)?)*°?)', s)
+    return ''.join(f'<bdi dir="ltr">{e(part)}</bdi>' if i % 2 else e(part)
+                   for i, part in enumerate(tokens))
 
 
 ICONS = {
@@ -484,7 +490,7 @@ def model_card(model):
     highlights = "".join(f"<li>{e(s)}</li>" for s in model["highlights"])
     return f'''<article class="model-card">
 <a class="model-card-image" href="{product_path(model)}" aria-label="{e(model['name'])} — {model['code']}">
-{picture(model['images'][0], 'portrait', model['name'] + ' بهوية IGA', '(min-width: 1000px) 360px, (min-width: 640px) 45vw, 90vw')}
+{picture(model['images'][0], model.get('orientation', 'portrait'), model['name'] + ' بهوية IGA', '(min-width: 1000px) 360px, (min-width: 640px) 45vw, 90vw')}
 </a><div class="model-card-copy"><p class="model-code">{ltr(model['code'])}</p>
 <h3><a href="{product_path(model)}">{e(model['name'])}</a></h3>
 <ul class="model-highlights">{highlights}</ul>
@@ -493,26 +499,29 @@ def model_card(model):
 
 
 def build_product(model):
-    group = next(g for g in vending.CATEGORY['products'] if g['id'] == model['category'])
+    owner = CATS[model['section']]
+    group = next(g for g in owner['products'] if g['id'] == model['category'])
+    kind = model.get('orientation', 'portrait')
+    planning = model.get('planning', ['المساحة والتهوية ومسار التعبئة والصيانة.', 'الكهرباء وتكامل وسيلة الدفع المحلية.', 'الكمية والشحن والتركيب وخطة قطع الغيار.'])
     path = product_path(model)
     page_url = url(path)
-    back = cat_path(vending.CATEGORY) + '#' + group['id']
+    back = cat_path(owner) + '#' + group['id']
     ask_text = f"مرحبًا IGA Lines، أرغب بعرض سعر ومواصفات {model['name']}، رمز المنتج {model['code']}."
     labels = ['خلفية بيضاء', 'في الموقع — 1', 'في الموقع — 2']
     gallery = ''
     for i, (stem, label) in enumerate(zip(model['images'], labels)):
         gallery += f'''<figure class="product-slide" id="photo-{i}" data-photo="{i}">
-{picture(stem, 'portrait' if i == 0 else 'photo', model['name'] + ' — ' + label, '(min-width: 1000px) 600px, 92vw', eager='high' if i == 0 else False)}
+{picture(stem, kind if i == 0 else 'photo', model['name'] + ' — ' + label, '(min-width: 1000px) 600px, 92vw', eager='high' if i == 0 else False)}
 </figure>'''
     thumbs = ''.join(f'''<a class="product-thumb" href="#photo-{i}" data-photo-select="{i}" aria-label="عرض الصورة: {e(label)}">
-{picture(stem, 'portrait' if i == 0 else 'photo', '', '96px')}<span>{e(label)}</span></a>'''
+{picture(stem, kind if i == 0 else 'photo', '', '96px')}<span>{e(label)}</span></a>'''
                      for i, (stem, label) in enumerate(zip(model['images'], labels)))
     specs = ''.join(f'<div><dt>{e(k)}</dt><dd>{spec_value(v)}</dd></div>' for k, v in model['specs'])
     uses = ' · '.join(e(x) for x in model['uses'])
     related = ''.join(model_card(m) for m in group['models'] if m is not model)
-    body = f'''<main id="main" class="product-page">
+    body = f'''<main id="main" class="product-page{' product-page--landscape' if kind == 'landscape' else ''}">
 <div class="product-top"><div class="wrap">
-<nav class="crumbs" aria-label="مسار التصفح"><ol><li><a href="/">الرئيسية</a></li><li><a href="/categories/vending-machines/">مكائن البيع الذاتي</a></li><li><a href="{back}">{e(group['short'])}</a></li><li aria-current="page">{ltr(model['code'])}</li></ol></nav>
+<nav class="crumbs" aria-label="مسار التصفح"><ol><li><a href="/">الرئيسية</a></li><li><a href="{cat_path(owner)}">{e(owner['nav'])}</a></li><li><a href="{back}">{e(group['short'])}</a></li><li aria-current="page">{ltr(model['code'])}</li></ol></nav>
 <div class="product-layout">
 <div class="product-gallery" data-gallery><div class="product-photos">{gallery}</div>
 <nav class="product-thumbs" aria-label="صور المنتج">{thumbs}</nav>
@@ -526,21 +535,21 @@ def build_product(model):
 <a class="product-back" href="{back}">قارن موديلات {e(group['short'])} {ICONS['go']}</a>
 </div></div></div></div>
 <section class="band band-steel" id="specifications" aria-labelledby="spec-title"><div class="wrap product-details">
-<div>{section_head('المواصفات الفنية', 'spec-title')}<dl class="product-specs"><div><dt>رمز المنتج لدى IGA</dt><dd>{ltr(model['code'])}</dd></div>{specs}</dl><p class="note-sm">{e(catalog.SPEC_NOTE)}</p></div>
-<aside class="product-planning"><h2>هل يناسب موقعك؟</h2><p class="eyebrow">مواقع مقترحة للدراسة</p><p>{uses}</p><h3>قبل تجهيز الموقع</h3><p>{e(model['check'])}</p><h3>ما الذي نراجعه معك؟</h3><ul><li>المساحة والتهوية ومسار التعبئة والصيانة.</li><li>الكهرباء وتكامل وسيلة الدفع المحلية.</li><li>الكمية والشحن والتركيب وخطة قطع الغيار.</li></ul><a class="btn btn-primary" href="{wa(ask_text)}" target="_blank" rel="noopener">ناقش تجهيز مشروعك {ICONS['go']}</a></aside>
+<div>{section_head('المواصفات الفنية', 'spec-title')}<dl class="product-specs"><div><dt>رمز المنتج لدى IGA</dt><dd>{ltr(model['code'])}</dd></div>{specs}</dl><p class="note-sm">{e(model.get('spec_note', catalog.SPEC_NOTE))}</p></div>
+<aside class="product-planning"><h2>هل يناسب موقعك؟</h2><p class="eyebrow">مواقع مقترحة للدراسة</p><p>{uses}</p><h3>قبل تجهيز الموقع</h3><p>{e(model['check'])}</p><h3>ما الذي نراجعه معك؟</h3><ul>{''.join(f'<li>{e(x)}</li>' for x in planning)}</ul><a class="btn btn-primary" href="{wa(ask_text)}" target="_blank" rel="noopener">ناقش تجهيز مشروعك {ICONS['go']}</a></aside>
 </div></section>
-<section class="band band-light" aria-labelledby="related-models"><div class="wrap">{section_head('موديلات أخرى من الفئة نفسها', 'related-models')}<div class="model-grid">{related}</div><a class="product-back" href="/categories/vending-machines/">تصفح الفئات الخمس {ICONS['go']}</a></div></section>
+<section class="band band-light" aria-labelledby="related-models"><div class="wrap">{section_head('موديلات أخرى من الفئة نفسها', 'related-models')}<div class="model-grid">{related}</div><a class="product-back" href="{cat_path(owner)}">تصفح جميع الحلول {ICONS['go']}</a></div></section>
 </main>'''
     nodes = [
         {'@type': 'Product', '@id': page_url + '#product', 'url': page_url,
          'name': model['name'] + ' ' + model['code'], 'sku': model['code'],
          'description': model['intro'], 'brand': {'@type': 'Brand', 'name': 'IGA Lines'},
-         'image': [img_url(s, 'portrait' if i == 0 else 'photo') for i,s in enumerate(model['images'])],
+         'image': [img_url(s, kind if i == 0 else 'photo') for i,s in enumerate(model['images'])],
          'additionalProperty': [{'@type': 'PropertyValue', 'name': k, 'value': v} for k,v in model['specs']]},
         {'@type': 'WebPage', '@id': page_url + '#webpage', 'url': page_url,
          'name': model['name'], 'inLanguage': 'ar-SA', 'isPartOf': {'@id': SITE_ID},
          'mainEntity': {'@id': page_url + '#product'}, 'breadcrumb': {'@id': page_url + '#breadcrumb'}},
-        breadcrumb_node(page_url, [('الرئيسية', url('/')), ('مكائن البيع الذاتي', url(cat_path(vending.CATEGORY))), (model['name'], page_url)])]
+        breadcrumb_node(page_url, [('الرئيسية', url('/')), (owner['nav'], url(cat_path(owner))), (model['name'], page_url)])]
     p = dict(path=path, title=f"{model['name']} {model['code']} | المواصفات والصور | IGA Lines",
              description=model['intro'], og=model['slug'], jsonld=jsonld(nodes), dock=ask_text)
     write(path, page(p, body))
@@ -576,7 +585,7 @@ def build_category(c):
     for p in products:
         if p.get('models'):
             cards = ''.join(model_card(m) for m in p['models'])
-            articles += f'''<article class="catalog-group" id="{p['id']}" aria-labelledby="{p['id']}-t">
+            articles += f'''<article class="catalog-group{' catalog-group--landscape' if not portrait else ''}" id="{p['id']}" aria-labelledby="{p['id']}-t">
 <div class="catalog-group-head"><div><p class="eyebrow">{e(p['tag'])}</p><h2 id="{p['id']}-t">{e(p['name'])}</h2></div><span class="model-count">{len(p['models'])} موديلات</span></div>
 <p class="catalog-intro">{md(p['body'])}</p><div class="model-grid">{cards}</div>
 <p class="catalog-check"><strong>قبل الاختيار:</strong> {md(p['check'])}</p></article>'''
@@ -709,12 +718,19 @@ def build_category(c):
         breadcrumb_node(page_url, [("الرئيسية", url("/")), (c["name"], page_url)]),
         faq_node(page_url, f["items"]),
     ]
-    if c is vending.CATEGORY:
-        nodes[2]['numberOfItems'] = len(catalog.MODELS)
-        nodes[2]['itemListElement'] = [
-            {'@type': 'ListItem', 'position': i + 1, 'name': m['name'] + ' ' + m['code'],
-             'url': url(product_path(m)), 'image': img_url(m['images'][0], 'portrait')}
-            for i, m in enumerate(catalog.MODELS)]
+    if any(p.get('models') for p in products):
+        entries = []
+        for group in products:
+            if group.get('models'):
+                entries.extend({'@type': 'ListItem', 'name': m['name'] + ' ' + m['code'],
+                                'url': url(product_path(m)),
+                                'image': img_url(m['images'][0], m.get('orientation', 'portrait'))}
+                               for m in group['models'])
+            else:
+                entries.append({'@type': 'ListItem', 'name': group['name'],
+                                'url': page_url + '#' + group['id'], 'image': img_url(group['image'], kind)})
+        nodes[2]['numberOfItems'] = len(entries)
+        nodes[2]['itemListElement'] = [dict(item, position=i + 1) for i, item in enumerate(entries)]
     p = dict(path=path, title=c["title"], description=c["description"], og=c["slug"],
              og_alt=c["h1_main"] + " " + c["h1_tail"], jsonld=jsonld(nodes),
              dock=f"مرحبًا IGA Lines، أرغب بعرض سعر لـ{c['name']}.")
@@ -879,7 +895,7 @@ def build_static():
                   {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"}],
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    pages = [("/", "1.0")] + [(cat_path(c), "0.9") for c in ORDERED] + [(product_path(m), "0.8") for m in catalog.MODELS] + [("/contact/", "0.6"), ("/policies.html", "0.4")]
+    pages = [("/", "1.0")] + [(cat_path(c), "0.9") for c in ORDERED] + [(product_path(m), "0.8") for m in ALL_MODELS] + [("/contact/", "0.6"), ("/policies.html", "0.4")]
     items = []
     for path, prio in pages:
         imgs = ""
@@ -889,9 +905,9 @@ def build_static():
             imgs = "".join(
                 f"<image:image><image:loc>{img_url(p['image'], kind)}</image:loc></image:image>"
                 for p in c["products"])
-        model = next((m for m in catalog.MODELS if product_path(m) == path), None)
+        model = next((m for m in ALL_MODELS if product_path(m) == path), None)
         if model:
-            imgs = ''.join(f"<image:image><image:loc>{img_url(s, 'portrait' if i == 0 else 'photo')}</image:loc></image:image>" for i,s in enumerate(model['images']))
+            imgs = ''.join(f"<image:image><image:loc>{img_url(s, model.get('orientation', 'portrait') if i == 0 else 'photo')}</image:loc></image:image>" for i,s in enumerate(model['images']))
         items.append(f"<url><loc>{url(path)}</loc><lastmod>{site.UPDATED_ISO}</lastmod>"
                      f"<priority>{prio}</priority>{imgs}</url>")
     (PUB / "sitemap.xml").write_text(
@@ -924,8 +940,8 @@ def build_static():
     for c in ORDERED:
         sols = "، ".join(p["name"] for p in c["products"])
         llms.append(f"- [{c['h1_main']} {c['h1_tail']}]({url(cat_path(c))}): {plain(c['description'])} الحلول: {sols}.")
-    llms += ['', '## Vending models', '']
-    llms += [f"- [{m['code']} — {m['name']}]({url(product_path(m))}): {m['label']}." for m in catalog.MODELS]
+    llms += ['', '## Product models', '']
+    llms += [f"- [{m['code']} — {m['name']}]({url(product_path(m))}): {m['label']}." for m in ALL_MODELS]
     llms += ["", "## Contact", "", f"- [تواصل مع IGA Lines]({url('/contact/')}): WhatsApp, phone and email.", ""]
     (PUB / "llms.txt").write_text("\n".join(llms), encoding="utf-8")
 
@@ -993,10 +1009,10 @@ AddCharset utf-8 .txt .xml .webmanifest
 
 def og_cards():
     cards = [("home", home_content.HOME["h1_main"], home_content.HOME["h1_tail"],
-              [vending.CATEGORY['products'][0]['image'], "iga-pack-pouch", "iga-recycle-sort", "iga-wash-tunnel"])]
+              [vending.CATEGORY['products'][0]['image'], "iga-pack-pouch", "iga-recycle-sort", car_wash.CATEGORY["products"][2]["image"]])]
     for c in ORDERED:
         cards.append((c["slug"], c["h1_main"], c["h1_tail"], [p["image"] for p in c["products"][:3]]))
-    for m in catalog.MODELS:
+    for m in ALL_MODELS:
         cards.append((m['slug'], m['name'], m['code'], m['images']))
     return cards
 
@@ -1067,7 +1083,7 @@ def main():
     build_home()
     for c in ORDERED:
         build_category(c)
-    for model in catalog.MODELS:
+    for model in ALL_MODELS:
         build_product(model)
     build_contact()
     build_404()

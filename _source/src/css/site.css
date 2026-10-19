@@ -2,7 +2,7 @@
    Signature: the logo's glowing line. It runs along the Arabic baseline of every H1,
    under section headings, and through the station bars that track position on a page. */
 
-/* Supplier-referenced vending catalog. White stages keep the whole cabinet visible. */
+/* Supplier-referenced catalog. White stages keep the whole machine visible. */
 .catalog-group { padding: 12px 0 56px; scroll-margin-top: 16px; }
 .catalog-group + .catalog-group { padding-top: 48px; border-top: 1px solid var(--rule); }
 .catalog-group-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
@@ -10,6 +10,8 @@
 .model-count { flex-shrink: 0; color: var(--slate); font-size: .9rem; }
 .catalog-intro { max-width: 900px; margin: 12px 0 28px; color: var(--ink-2); }
 .model-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; }
+.catalog-group--landscape .model-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.product-page--landscape .product-slide img { height: auto; aspect-ratio: 4 / 3; }
 .model-card { border: 1px solid var(--rule); border-radius: var(--r-lg); overflow: hidden; background: #fff; display: flex; flex-direction: column; }
 .model-card-image { display: block; background: #fff; border-bottom: 1px solid #edf0f4; padding: 20px; }
 .model-card-image img { width: 100%; height: 310px; object-fit: contain; }
@@ -76,6 +78,7 @@
 }
 @media (max-width: 579px) {
   .model-grid { grid-template-columns: 1fr; }
+  .catalog-group--landscape .model-grid { grid-template-columns: 1fr; }
   .model-card-image img { height: 320px; }
   .catalog-group-head { align-items: start; }
   .model-count { padding-top: 10px; font-size: .8rem; }

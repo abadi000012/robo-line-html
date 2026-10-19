@@ -19,6 +19,11 @@ each for flowers, cotton candy, protein shakes and orange juice (11 pages, 33 IG
 Catalog codes belong to IGA; factory references appear only where supported. Supplier evidence
 and editorial notes live in the non-public `_source/src/content/catalog.py`.
 
+Car washes have eight model pages (`/products/iga-cw01/` through `iga-cw08`): two each for
+touchless, brush gantry, tunnel and fleet washing, with 24 IGA illustrations. Water recycling
+remains a supporting system. Exact factory-version specifications and source URLs live in
+`_source/src/content/car_wash_catalog.py`; ratings and sales rankings are not asserted.
+
 ## Change something
 
 Edit the source in `_source/`, rebuild, commit, push.
@@ -29,6 +34,7 @@ Edit the source in `_source/`, rebuild, commit, push.
 | Home and contact page text | `_source/src/content/home.py` |
 | Category text, FAQs, tables, calculators | `_source/src/content/vending.py`, `packaging.py`, `recycling.py`, `car_wash.py` |
 | Vending models, specifications and image stems | `_source/src/content/catalog.py` |
+| Car-wash models, specifications and image stems | `_source/src/content/car_wash_catalog.py` |
 | Colors and layout | `_source/src/css/site.css` |
 | Calculators, WhatsApp message builder | `_source/src/js/site.js` |
 | Images (source files) | `_source/src/images/` — replace a file with a real photo of the same name |
